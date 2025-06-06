@@ -209,144 +209,156 @@ function About() {
   
 
   return (
-    <>
-      <Header/>
-       <div className="max-w-7xl mx-auto mt-10 px-4 mb-10">
-  {/* Tab Headers */}
-  <div className="flex justify-center border-b border-gray-200">
-    {tabs.map((tab) => (
-      <button
-        key={tab.id}
-        onClick={() => setActiveTab(tab.id)}
-        className={`px-6 py-3 font-semibold transition-colors duration-200 border-b-2 ${
-          activeTab === tab.id
-            ? "text-blue-800 border-b-blue-800"
-            : "text-gray-800 border-transparent hover:text-blue-800"
-        }`}
-      >
-        {tab.label}
-      </button>
-    ))}
-  </div>
-
-  {/* Tab Content */}
-  <div className="w-full mt-4 p-8 bg-white mb-10 text-gray-800 text-sm md:text-base text-left border border-gray-300 rounded-lg">
-    {tabs.map((tab) =>
-      activeTab === tab.id ? (
-        <div key={tab.id} className="space-y-4">
-          {tab.content.split("\n").map((p, idx) => (
-            <p key={idx} className="leading-relaxed">
-              {p}
-            </p>
+     <>
+      <Header />
+      <div className="max-w-7xl mx-auto mt-6 sm:mt-10 px-2 sm:px-4 mb-6 sm:mb-10">
+        {/* Tab Headers - Made horizontal scrollable on mobile */}
+        <div className="flex overflow-x-auto pb-2 sm:pb-0 sm:justify-center border-b border-gray-200 hide-scrollbar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold whitespace-nowrap transition-colors duration-200 border-b-2 ${
+                activeTab === tab.id
+                  ? "text-blue-800 border-b-blue-800"
+                  : "text-gray-800 border-transparent hover:text-blue-800"
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
-      ) : null
-    )}
-  </div>
-</div>
- <section className="bg-gray-50 py-10">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-10">
-        {/* Left Content */}
-        <div className="w-full md:w-1/2">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-4">
-            Inspiration, innovation, <br /> and opportunities.
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Many Desktop Publishing Packages And Web Page Editors Now Use Lorem
-            Ipsum As Their Default Model Text.
-          </p>
 
-          {/* Accordion */}
-          <div className="space-y-4">
-            {/* Vision */}
-            <div className="bg-white shadow-sm border rounded">
-              <button
-                className="w-full text-left px-5 py-3 font-semibold text-yellow-500"
-                onClick={() => toggleTab("vision")}
-              >
-                ▾ Business’s vision
-              </button>
-              {openTab === "vision" && (
-                <div className="px-5 pb-4 text-gray-700">
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting industry. Lorem Ipsum has been the industry's
-                  standard dummy text ever since the 1500s...
-                </div>
-              )}
-            </div>
+        {/* Tab Content */}
+        <div className="w-full mt-3 sm:mt-4 p-4 sm:p-6 md:p-8 bg-white mb-6 sm:mb-10 text-gray-800 text-xs sm:text-sm md:text-base text-left border border-gray-300 rounded-lg">
+          {tabs.map((tab) =>
+            activeTab === tab.id ? (
+              <div key={tab.id} className="space-y-3 sm:space-y-4">
+                {tab.content.split("\n").map((p, idx) => (
+                  <p key={idx} className="leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              </div>
+            ) : null
+          )}
+        </div>
+      </div>
 
-            {/* Mission */}
-            <div className="bg-white shadow-sm border rounded">
-              <button
-                className="w-full text-left px-5 py-3 font-semibold text-black"
-                onClick={() => toggleTab("mission")}
-              >
-                ▾ Our mission
-              </button>
-              {openTab === "mission" && (
-                <div className="px-5 pb-4 text-gray-700">
-                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae, porro officia. Incidunt quaerat, sed error dicta harum iusto est minima itaque culpa in nulla, voluptatem pariatur eius quidem quibusdam nemo?
-                 Praesentium, pariatur cupiditate repudiandae nisi, vero tenetur officiis dolorum nostrum corrupti consectetur ipsa voluptate minima perferendis nihil vitae? Rerum, deserunt nostrum? Iste non delectus assumenda, soluta impedit dolore obcaecati. Debitis.
-                </div>
-              )}
-            </div>
+      <section className="bg-gray-50 py-6 sm:py-10">
+        <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row items-center gap-6 sm:gap-10">
+          {/* Left Content */}
+          <div className="w-full md:w-1/2">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-3 sm:mb-4">
+              Inspiration, innovation, <br /> and opportunities.
+            </h2>
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
+              Many Desktop Publishing Packages And Web Page Editors Now Use Lorem
+              Ipsum As Their Default Model Text.
+            </p>
 
-            {/* Support */}
-            <div className="bg-white shadow-sm border rounded">
-              <button
-                className="w-full text-left px-5 py-3 font-semibold text-black"
-                onClick={() => toggleTab("support")}
-              >
-                ▾ Support
-              </button>
-              {openTab === "support" && (
-                <div className="px-5 pb-4 text-gray-700">
-                  We offer 24/7 support to ensure smooth operation and customer
-                  satisfaction at every step.
-                </div>
-              )}
+            {/* Accordion */}
+            <div className="space-y-3 sm:space-y-4">
+              {/* Vision */}
+              <div className="bg-white shadow-sm border rounded">
+                <button
+                  className="w-full text-left px-4 sm:px-5 py-2 sm:py-3 font-semibold text-yellow-500 text-sm sm:text-base"
+                  onClick={() => toggleTab("vision")}
+                >
+                  ▾ Business's vision
+                </button>
+                {openTab === "vision" && (
+                  <div className="px-4 sm:px-5 pb-3 sm:pb-4 text-gray-700 text-sm sm:text-base">
+                    Lorem Ipsum is simply dummy text of the printing and
+                    typesetting industry. Lorem Ipsum has been the industry's
+                    standard dummy text ever since the 1500s...
+                  </div>
+                )}
+              </div>
+
+              {/* Mission */}
+              <div className="bg-white shadow-sm border rounded">
+                <button
+                  className="w-full text-left px-4 sm:px-5 py-2 sm:py-3 font-semibold text-black text-sm sm:text-base"
+                  onClick={() => toggleTab("mission")}
+                >
+                  ▾ Our mission
+                </button>
+                {openTab === "mission" && (
+                  <div className="px-4 sm:px-5 pb-3 sm:pb-4 text-gray-700 text-sm sm:text-base">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae, porro officia. Incidunt quaerat, sed error dicta harum iusto est minima itaque culpa in nulla, voluptatem pariatur eius quidem quibusdam nemo?
+                    Praesentium, pariatur cupiditate repudiandae nisi, vero tenetur officiis dolorum nostrum corrupti consectetur ipsa voluptate minima perferendis nihil vitae? Rerum, deserunt nostrum? Iste non delectus assumenda, soluta impedit dolore obcaecati. Debitis.
+                  </div>
+                )}
+              </div>
+
+              {/* Support */}
+              <div className="bg-white shadow-sm border rounded">
+                <button
+                  className="w-full text-left px-4 sm:px-5 py-2 sm:py-3 font-semibold text-black text-sm sm:text-base"
+                  onClick={() => toggleTab("support")}
+                >
+                  ▾ Support
+                </button>
+                {openTab === "support" && (
+                  <div className="px-4 sm:px-5 pb-3 sm:pb-4 text-gray-700 text-sm sm:text-base">
+                    We offer 24/7 support to ensure smooth operation and customer
+                    satisfaction at every step.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Image */}
-        <div className="w-full md:w-1/2 flex justify-center">
-          <img
-            src="https://thumbs.dreamstime.com/b/3d-rendering-interior-room-computers-photos-wall-computer-room-lot-monitors-screens-led-backlight-ceiling-ai-generated-280967673.jpg"
-            alt="About section visual"
-            className="w-full max-w-md md:max-w-full rounded-lg"
-          />
+          {/* Right Image */}
+          <div className="w-full md:w-1/2 flex justify-center mt-4 sm:mt-0">
+            <img
+              src="https://thumbs.dreamstime.com/b/3d-rendering-interior-room-computers-photos-wall-computer-room-lot-monitors-screens-led-backlight-ceiling-ai-generated-280967673.jpg"
+              alt="About section visual"
+              className="w-full max-w-md md:max-w-full rounded-lg"
+            />
+          </div>
         </div>
-      </div>
-    </section>
-     <div className="bg-gray-50 py-12 md:py-16 ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {features.map((feature) => (
-            <div key={feature.id} className="text-center">
-              {/* Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-800 rounded-lg flex items-center justify-center">
-                  <feature.icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+      </section>
+
+      <div className="bg-gray-50 py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
+            {features.map((feature) => (
+              <div key={feature.id} className="text-center px-2 sm:px-0">
+                {/* Icon */}
+                <div className="flex justify-center mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-blue-800 rounded-lg flex items-center justify-center">
+                    <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+                  </div>
                 </div>
+                
+                {/* Title */}
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 sm:mb-4">
+                  {feature.title}
+                </h3>
+                
+                {/* Content */}
+                <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed">
+                  {feature.content}
+                </p>
               </div>
-              
-              {/* Title */}
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
-                {feature.title}
-              </h3>
-              
-              {/* Content */}
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                {feature.content}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
 
-      <Footer/>
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      <Footer />
     </>
   )
 }

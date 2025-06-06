@@ -142,22 +142,20 @@ function Shop() {
     }));
   };
 
-  const renderStars = (rating) => {
+ const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       <Star
         key={index}
-        className={`w-4 h-4 ${
-          index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
+        className={`w-4 h-4 ${index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
       />
     ));
   };
 
- const ProductCard = ({ product }) => {
+  const ProductCard = ({ product }) => {
     const handleProductClick = () => {
       navigate(`/product-details/${product.id}`);
     };
-       
+
     const ImageWithWishlist = (
       <div className="relative group">
         <img
@@ -184,27 +182,18 @@ function Shop() {
           <div className="h-56 mb-4 bg-gray-100 rounded-lg overflow-hidden">
             {ImageWithWishlist}
           </div>
-          <h3 className="font-medium text-gray-900 mb-3 line-clamp-2 text-base">
-            {product.name}
-          </h3>
-          <div className="flex items-center mb-3">
-            {renderStars(product.rating)}
-          </div>
+          <h3 className="font-medium text-gray-900 mb-3 line-clamp-2 text-base">{product.name}</h3>
+          <div className="flex items-center mb-3">{renderStars(product.rating)}</div>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl font-semibold text-blue-800">
-              ${product.price}
-            </span>
+            <span className="text-xl font-semibold text-blue-800">${product.price}</span>
             {product.originalPrice && (
-              <span className="text-base text-gray-500 line-through">
-                ${product.originalPrice}
-              </span>
+              <span className="text-base text-gray-500 line-through">${product.originalPrice}</span>
             )}
           </div>
           <ul className="text-sm text-gray-600 mb-4 space-y-2">
             {product.features.map((feature, index) => (
               <li key={index} className="flex items-center">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>
-                {feature}
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>{feature}
               </li>
             ))}
           </ul>
@@ -217,32 +206,23 @@ function Shop() {
 
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <div className="flex gap-6">
-          <div className="w-40 h-40 bg-gray-100 rounded-lg overflow-hidden">
+        <div className="flex flex-col sm:flex-row gap-6">
+          <div className="w-full sm:w-40 h-40 bg-gray-100 rounded-lg overflow-hidden">
             {ImageWithWishlist}
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-medium text-gray-900 mb-3">
-              {product.name}
-            </h3>
-            <div className="flex items-center mb-4">
-              {renderStars(product.rating)}
-            </div>
+            <h3 className="text-xl font-medium text-gray-900 mb-3">{product.name}</h3>
+            <div className="flex items-center mb-4">{renderStars(product.rating)}</div>
             <div className="flex items-center gap-3 mb-5">
-              <span className="text-2xl font-semibold text-blue-800">
-                ${product.price}
-              </span>
+              <span className="text-2xl font-semibold text-blue-800">${product.price}</span>
               {product.originalPrice && (
-                <span className="text-lg text-gray-500 line-through">
-                  ${product.originalPrice}
-                </span>
+                <span className="text-lg text-gray-500 line-through">${product.originalPrice}</span>
               )}
             </div>
             <ul className="text-gray-600 mb-6 space-y-2 text-base">
               {product.features.map((feature, index) => (
                 <li key={index} className="flex items-center">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
-                  {feature}
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>{feature}
                 </li>
               ))}
             </ul>
@@ -254,11 +234,11 @@ function Shop() {
       </div>
     );
   };
+
   return (
     <>
-    <Header/>
-
-    <div className="bg-white shadow-sm">
+      <Header />
+      <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4">
             <nav className="text-sm text-gray-600 text-center">
@@ -267,17 +247,16 @@ function Shop() {
               <span>shop</span>
             </nav>
           </div>
-                        <h1 className="text-3xl font-bold text-gray-900 text-center mb-12">SHOP</h1>
-
+          <h1 className="text-3xl font-bold text-gray-900 text-center mb-12">SHOP</h1>
         </div>
       </div>
 
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
+      <div className="min-h-screen bg-gray-50">
+       <div className="max-w-full px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Sidebar - Filters */}
-          <div className="w-80 space-y-6">
-            {/* Shop By Categories */}
+ <div className="w-full lg:w-80 space-y-6">
+              {/* Shop By Categories */}
             <div className="bg-white rounded-lg p-6">
               <div
                 className="flex items-center justify-between cursor-pointer"
@@ -404,61 +383,46 @@ function Shop() {
 
           {/* Right Side - Products */}
           <div className="flex-1">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-gray-600 text-base">Showing 1–{products.length} of {products.length} results</p>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
-                  <button
-                    onClick={() => setViewMode('horizontal')}
-                    className={`p-3 rounded ${
-                      viewMode === 'horizontal' ? 'bg-blue-800 text-white' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <List size={22} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('vertical')}
-                    className={`p-3 rounded ${
-                      viewMode === 'vertical' ? 'bg-blue-800 text-white' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Grid size={22} />
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                <p className="text-gray-600 text-base">Showing 1–{products.length} of {products.length} results</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
+                    <button
+                      onClick={() => setViewMode('horizontal')}
+                      className={`p-3 rounded ${viewMode === 'horizontal' ? 'bg-blue-800 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      <List size={22} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('vertical')}
+                      className={`p-3 rounded ${viewMode === 'vertical' ? 'bg-blue-800 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      <Grid size={22} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Products Grid */}
-            <div className={`gap-6 ${
-              viewMode === 'vertical' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'space-y-6'
-            }`}>
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+              <div className={`gap-6 ${viewMode === 'vertical' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-6'}`}>
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
 
-            {/* Pagination */}
-            <div className="flex justify-center mt-12">
-              <div className="flex items-center gap-2">
-                <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">
-                  Previous
-                </button>
-                <button className="px-4 py-3 bg-blue-800 text-white rounded-md text-base">1</button>
-                <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">2</button>
-                <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">3</button>
-                <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">
-                  Next
-                </button>
+              <div className="flex justify-center mt-12">
+                <div className="flex items-center gap-2">
+                  <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">Previous</button>
+                  <button className="px-4 py-3 bg-blue-800 text-white rounded-md text-base">1</button>
+                  <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">2</button>
+                  <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">3</button>
+                  <button className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-base">Next</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <Footer/>
+      <Footer />
     </>
 
 

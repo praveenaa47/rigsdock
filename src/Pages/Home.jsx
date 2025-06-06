@@ -499,43 +499,47 @@ function Home() {
             </div>
 
             {/* Bottom Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Easy Work Section */}
-              <div className={`rounded-xl p-6 ${isDark ? 'bg-gray-800' : 'bg-gray-100'} relative overflow-hidden`}>
-                <div className="relative z-10">
-                  <p className="text-sm text-gray-500 mb-2">Easy Work</p>
-                  <h3 className="text-2xl font-bold mb-4">
-                    Black Slim Pad<br />
-                    Laptop's
-                  </h3>
-                </div>
-                <div className="absolute right-0 bottom-0">
-                  <img 
-                    src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop"
-                    alt="Laptops"
-                    className="w-80 h-40 object-cover rounded-tl-xl opacity-80"
-                  />
-                </div>
-              </div>
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  {/* Easy Work Section */}
+  <div className={`group relative overflow-hidden rounded-xl p-6 min-h-[220px] ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className="relative z-10">
+      <p className="text-sm text-gray-500 mb-2">Easy Work</p>
+      <h3 className="text-2xl font-bold mb-4">
+        Black Slim Pad<br />
+        Laptop's
+      </h3>
+    </div>
+    <div className="absolute right-0 bottom-0 w-1/2 max-w-[200px]">
+      <img 
+        src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop"
+        alt="Laptops"
+        className="w-full h-auto object-cover rounded-tl-xl transform transition-transform duration-300 group-hover:scale-105"
+      />
+    </div>
+  </div>
 
-              {/* Smart Use Section */}
-              <div className={`rounded-xl p-6 ${isDark ? 'bg-gray-800' : 'bg-gray-100'} relative overflow-hidden`}>
-                <div className="relative z-10">
-                  <p className="text-sm text-gray-500 mb-2">Smart Use</p>
-                  <h3 className="text-2xl font-bold mb-4">
-                    Samsung Smart<br />
-                    Phone's
-                  </h3>
-                </div>
-                <div className="absolute right-0 bottom-0">
-                  <img 
-                    src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=300&fit=crop"
-                    alt="Smart Watches"
-                    className="w-80 h-40 object-cover rounded-tl-xl opacity-80"
-                  />
-                </div>
-              </div>
-            </div>
+  {/* Smart Use Section */}
+  <div className={`group relative overflow-hidden rounded-xl p-6 min-h-[220px] ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className="relative z-10">
+      <p className="text-sm text-gray-500 mb-2">Smart Use</p>
+      <h3 className="text-2xl font-bold mb-4">
+        Samsung Smart<br />
+        Phone's
+      </h3>
+    </div>
+    <div className="absolute right-0 bottom-0 w-1/2 max-w-[200px]">
+      <img 
+        src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=300&fit=crop"
+        alt="Smart Phones"
+        className="w-full h-auto object-cover rounded-tl-xl transform transition-transform duration-300 group-hover:scale-105"
+      />
+    </div>
+  </div>
+</div>
+
+
+
+
           </div>
         </div>
       </div>
@@ -567,7 +571,7 @@ function Home() {
     >
       {Array.from({ length: totalSlides }, (_, slideIndex) => (
         <div key={slideIndex} className="w-full flex-shrink-0">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+<div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {products
               .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
               .map((product) => (
@@ -717,7 +721,7 @@ function Home() {
     >
       {Array.from({ length: totalSlides }, (_, slideIndex) => (
         <div key={slideIndex} className="w-full flex-shrink-0">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+<div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {products
               .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
               .map((product) => (
@@ -785,7 +789,7 @@ function Home() {
 
      {/* <div className="min-h-screen bg-gray-50 p-4"> */}
 <div className="w-full py-12 bg-white overflow-hidden relative">
-  <div className="max-w-7xl mx-auto items-center gap-7 text-center px-4 sm:px-6 lg:px-8">
+  <div className="max-w-7xl mx-auto text-center px-4 sm:px-6 lg:px-8">
     
     {/* Header */}
     <div className="text-center mb-10">
@@ -797,39 +801,44 @@ function Home() {
     {/* Arrows */}
     <button 
       onClick={prevSlide}
-      className={`absolute top-1/2 left-2 z-10 transform -translate-y-1/2 p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`absolute top-1/2 left-2 z-10 transform -translate-y-1/2 p-2 sm:p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${
+        currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
       disabled={currentIndex === 0}
     >
-      <ChevronLeft className="w-6 h-6" />
+      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
     </button>
 
     <button 
       onClick={nextSlide}
-      className={`absolute top-1/2 right-2 z-10 transform -translate-y-1/2 p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${currentIndex === maxIndex ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`absolute top-1/2 right-2 z-10 transform -translate-y-1/2 p-2 sm:p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${
+        currentIndex === maxIndex ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
       disabled={currentIndex === maxIndex}
     >
-      <ChevronRight className="w-6 h-6" />
+      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
     </button>
 
     {/* Slider */}
     <div className="relative overflow-hidden w-full">
       <div 
         className="flex transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        style={{ width: `${totalSlides * 100}%`, transform: `translateX(-${(100 / totalSlides) * currentIndex}%)` }}
       >
         {Array.from({ length: totalSlides }, (_, slideIndex) => (
           <div 
             key={slideIndex}
-            className="w-full flex-shrink-0"
+            className="w-full flex justify-center px-2"  // Centers grid container
+            style={{ width: `${100 / totalSlides}%` }}
           >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-center">
               {brands
                 .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
                 .map((brand) => (
-                  <div
-                    key={brand.id}
-                    className="group relative bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-300 min-w-0"
-                  >
+                 <div
+  key={brand.id}
+  className="group relative w-full max-w-[160px] flex-grow-0 flex-shrink-0 bg-gray-50 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-300"
+>
                     {/* Brand Logo */}
                     <div className="flex items-center justify-center h-20 mb-4 rounded-lg border-2 border-gray-400 bg-gray-100 p-4">
                       <img 
@@ -879,6 +888,8 @@ function Home() {
     </div>
   </div>
 </div>
+
+
 
 
     {/* </div> */}

@@ -2,3 +2,7 @@
 body{
      font-family: "Montserrat", sans-serif;
 }
+
+body, html {
+  overflow-x: hidden;
+}
