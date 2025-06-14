@@ -135,8 +135,7 @@ const brands = [
 function Home() {
   const [isDark, setIsDark] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-    const BASE_URL = "https://rigsdock.com"
-
+  const [topRatedProducts, setTopRatedProducts] = useState([]);
   const [timeLeft, setTimeLeft] = useState({
     days: 458,
     hours: 4,
@@ -147,25 +146,34 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-   useEffect(() => {
-    const fetchLatestProducts = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/user/product/get`);
-        const sortedProducts = response.data.products
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 10); // Get the 10 latest products
-        setLatestProducts(sortedProducts);
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to fetch latest products", err);
-        setError(err);
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      // Fetch latest products
+      const latestResponse = await axios.get(`${BASE_URL}/user/product/get`);
+      const sortedLatest = latestResponse.data.products
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 10);
+      setLatestProducts(sortedLatest);
 
-    fetchLatestProducts();
-  }, []);
+      // Fetch top rated products
+      const topRatedResponse = await axios.get(`${BASE_URL}/user/product/get`);
+      const sortedTopRated = topRatedResponse.data.products
+        .sort((a, b) => b.averageRating - a.averageRating)
+        .slice(0, 10);
+      setTopRatedProducts(sortedTopRated);
 
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch products", err);
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  fetchProducts();
+}, []);
   // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -647,104 +655,112 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className=" px-4 py-4 ">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Top Rated Item’s</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={prevSlide}
-              className={`p-2 rounded-full ${
-                isDark
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-white hover:bg-gray-100"
-              } shadow-md transition-colors`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className={`p-2 rounded-full ${
-                isDark
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-white hover:bg-gray-100"
-              } shadow-md transition-colors`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+    <div className="px-4 py-4">
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-2xl font-bold">Top Rated Item's</h2>
+    <div className="flex gap-2">
+      <button
+        onClick={prevSlide}
+        className={`p-2 rounded-full ${
+          isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+        } shadow-md transition-colors`}
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className={`p-2 rounded-full ${
+          isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+        } shadow-md transition-colors`}
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+
+  {loading ? (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  ) : error ? (
+    <div className="text-center py-10 text-red-500">{error}</div>
+  ) : (
+    <div className="relative overflow-hidden">
+      <div className="flex transition-transform duration-500 ease-in-out">
+        {Array.from({ length: Math.ceil(topRatedProducts.length / itemsPerSlide) }, (_, slideIndex) => (
+          <div key={slideIndex} className="w-full flex-shrink-0">
+            <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {topRatedProducts
+                .slice(
+                  slideIndex * itemsPerSlide,
+                  (slideIndex + 1) * itemsPerSlide
+                )
+                .map((product) => (
+                  <div
+                    key={product._id}
+                    className={`rounded-xl p-4 ${
+                      isDark ? "bg-gray-800" : "bg-white"
+                    } shadow-md hover:shadow-lg transition-shadow relative`}
+                  >
+                    {product.price !== product.finalPrice && (
+                      <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
+                        Sale
+                      </span>
+                    )}
+
+                    <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
+                      <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+                    </button>
+
+                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
+                      <img
+                        src={
+                          product.images && product.images.length > 0
+                            ? `${BASE_URL}/uploads/${product.images[0]}`
+                            : "https://via.placeholder.com/300"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/300";
+                        }}
+                      />
+                    </div>
+
+                    <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
+                      {product.name}
+                    </h3>
+
+                    <div className="flex text-yellow-400 text-sm mb-1">
+                      {renderStars(product.averageRating)}
+                    </div>
+
+                    <div className="text-sm text-center mb-2">
+                      {product.price !== product.finalPrice && (
+                        <span className="text-gray-400 line-through mr-1">
+                          ₹{product.price}
+                        </span>
+                      )}
+                      <span className="text-blue-600 font-bold">
+                        ₹{product.finalPrice}
+                      </span>
+                    </div>
+
+                    <button 
+                      onClick={() => navigateToProduct(product._id)}
+                      className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
+                    >
+                      View Product
+                    </button>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-
-        {/* Sliding Cards */}
-        <div className="relative overflow-hidden">
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          >
-            {Array.from({ length: totalSlides }, (_, slideIndex) => (
-              <div key={slideIndex} className="w-full flex-shrink-0">
-                <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {products
-                    .slice(
-                      slideIndex * itemsPerSlide,
-                      (slideIndex + 1) * itemsPerSlide
-                    )
-                    .map((product) => (
-<div
-  key={product.id}
-  className={`rounded-xl p-4 ${
-    isDark ? "bg-gray-800" : "bg-white"
-  } shadow-md hover:shadow-lg transition-shadow relative`}
->
-  {product.discount && (
-    <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
-      {product.discount}
-    </span>
-  )}
-
-  {/* Wishlist Button */}
-  <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-    <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-  </button>
-
-  <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-    <img
-      src={product.image}
-      alt={product.name}
-      className="w-full h-full object-cover"
-    />
-  </div>
-
-  <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
-    {product.name}
-  </h3>
-
-  <div className="flex text-yellow-400 text-sm mb-1">
-    {renderStars(product.rating)}
-  </div>
-
-  <div className="text-sm text-center mb-2">
-    {product.originalPrice && (
-      <span className="text-gray-400 line-through mr-1">
-        {product.originalPrice}
-      </span>
-    )}
-    <span className="text-blue-600 font-bold">
-      {product.price}
-    </span>
-  </div>
-
-  {/* View Product Button below price */}
-  <button className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors">
-    View Product
-  </button>
-</div>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
+    </div>
+  )}
+</div>
 
       <div className="w-full px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -837,243 +853,112 @@ function Home() {
         </div>
       </section>
 
-      <div className="mt-10 px-4 py-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">New Arrivals</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={prevSlide}
-              className={`p-2 rounded-full ${
-                isDark
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-white hover:bg-gray-100"
-              } shadow-md transition-colors`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className={`p-2 rounded-full ${
-                isDark
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-white hover:bg-gray-100"
-              } shadow-md transition-colors`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Sliding Cards */}
-        <div className="relative overflow-hidden">
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          >
-            {Array.from({ length: totalSlides }, (_, slideIndex) => (
-              <div key={slideIndex} className="w-full flex-shrink-0">
-                <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {products
-                    .slice(
-                      slideIndex * itemsPerSlide,
-                      (slideIndex + 1) * itemsPerSlide
-                    )
-                    .map((product) => (
-<div
-  key={product.id}
-  className={`rounded-xl p-4 ${
-    isDark ? "bg-gray-800" : "bg-white"
-  } shadow-md hover:shadow-lg transition-shadow relative`}
->
-  {product.discount && (
-    <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
-      {product.discount}
-    </span>
-  )}
-
-  {/* Wishlist Button */}
-  <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-    <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-  </button>
-
-  <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-    <img
-      src={product.image}
-      alt={product.name}
-      className="w-full h-full object-cover"
-    />
+     <div className="mt-10 px-4 py-4">
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-2xl font-bold">New Arrivals</h2>
+    <div className="flex gap-2">
+      <button
+        onClick={prevSlide}
+        className={`p-2 rounded-full ${
+          isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+        } shadow-md transition-colors`}
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className={`p-2 rounded-full ${
+          isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+        } shadow-md transition-colors`}
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </div>
   </div>
 
-  <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
-    {product.name}
-  </h3>
-
-  <div className="flex text-yellow-400 text-sm mb-1">
-    {renderStars(product.rating)}
-  </div>
-
-  <div className="text-sm text-center mb-2">
-    {product.originalPrice && (
-      <span className="text-gray-400 line-through mr-1">
-        {product.originalPrice}
-      </span>
-    )}
-    <span className="text-blue-600 font-bold">
-      {product.price}
-    </span>
-  </div>
-
-  {/* View Product Button below price */}
-  <button className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors">
-    View Product
-  </button>
-</div>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <section className="px-4 md:px-10 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {promoItems.map((item) => (
-              <div
-                key={item.id}
-                className={`text-white rounded-lg overflow-hidden flex items-center justify-between p-6 h-60 md:h-64 lg:h-72 ${item.bgColor}`}
-              >
-                {/* Text Content */}
-                <div>
-                  <p className="text-sm">{item.subtitle}</p>
-                  <h3 className="text-2xl font-bold mb-1">{item.title}</h3>
-                  <p className="text-lg font-semibold">
-                    Only <span className="text-white">{item.price}</span>
-                  </p>
-                </div>
-
-                {/* Image */}
-                <div className="w-36 md:w-44 lg:w-52 transition-transform duration-300 hover:scale-105">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-auto object-contain"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* <div className="min-h-screen bg-gray-50 p-4"> */}
-        <div className="w-full py-12 bg-white overflow-hidden relative">
-          <div className="max-w-7xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Popular Brands
-              </h2>
-            </div>
-
-            {/* Arrows */}
-            <button
-              onClick={prevSlide}
-              className={`absolute top-1/2 left-2 z-10 transform -translate-y-1/2 p-2 sm:p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${
-                currentIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            <button
-              onClick={nextSlide}
-              className={`absolute top-1/2 right-2 z-10 transform -translate-y-1/2 p-2 sm:p-3 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md transition-colors ${
-                currentIndex === maxIndex ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={currentIndex === maxIndex}
-            >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            {/* Slider */}
-            <div className="relative overflow-hidden w-full">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  width: `${totalSlides * 100}%`,
-                  transform: `translateX(-${
-                    (100 / totalSlides) * currentIndex
-                  }%)`,
-                }}
-              >
-                {Array.from({ length: totalSlides }, (_, slideIndex) => (
+  {loading ? (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  ) : error ? (
+    <div className="text-center py-10 text-red-500">{error}</div>
+  ) : (
+    <div className="relative overflow-hidden">
+      <div className="flex transition-transform duration-500 ease-in-out">
+        {Array.from({ length: Math.ceil(latestProducts.length / itemsPerSlide) }, (_, slideIndex) => (
+          <div key={slideIndex} className="w-full flex-shrink-0">
+            <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {latestProducts
+                .slice(
+                  slideIndex * itemsPerSlide,
+                  (slideIndex + 1) * itemsPerSlide
+                )
+                .map((product) => (
                   <div
-                    key={slideIndex}
-                    className="w-full flex justify-center px-2" // Centers grid container
-                    style={{ width: `${100 / totalSlides}%` }}
+                    key={product._id}
+                    className={`rounded-xl p-4 ${
+                      isDark ? "bg-gray-800" : "bg-white"
+                    } shadow-md hover:shadow-lg transition-shadow relative`}
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-center">
-                      {brands
-                        .slice(
-                          slideIndex * itemsPerSlide,
-                          (slideIndex + 1) * itemsPerSlide
-                        )
-                        .map((brand) => (
-                          <div
-                            key={brand.id}
-                            className="group relative w-full max-w-[160px] flex-grow-0 flex-shrink-0 bg-gray-50 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-300"
-                          >
-                            {/* Brand Logo */}
-                            <div className="flex items-center justify-center h-20 mb-4 rounded-lg border-2 border-gray-400 bg-gray-100 p-4">
-                              <img
-                                src={brand.image}
-                                alt={`${brand.name} logo`}
-                                className="max-h-12 max-w-24 object-contain group-hover:scale-110 transition-transform duration-300"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextSibling.style.display = "flex";
-                                }}
-                              />
-                              <div className="hidden items-center justify-center text-sm font-bold text-gray-600">
-                                {brand.name}
-                              </div>
-                            </div>
+                    {product.price !== product.finalPrice && (
+                      <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
+                        Sale
+                      </span>
+                    )}
 
-                            {/* Brand Name */}
-                            <div className="text-center">
-                              <h3 className="font-semibold text-sm text-gray-700 truncate">
-                                {brand.name}
-                              </h3>
-                            </div>
+                    <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
+                      <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+                    </button>
 
-                            {/* Hover Overlay */}
-                            <div
-                              className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${brand.bgColor}`}
-                            ></div>
-                          </div>
-                        ))}
+                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
+                      <img
+                        src={
+                          product.images && product.images.length > 0
+                            ? `${BASE_URL}/uploads/${product.images[0]}`
+                            : "https://via.placeholder.com/300"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/300";
+                        }}
+                      />
                     </div>
+
+                    <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
+                      {product.name}
+                    </h3>
+
+                    <div className="flex text-yellow-400 text-sm mb-1">
+                      {renderStars(product.averageRating)}
+                    </div>
+
+                    <div className="text-sm text-center mb-2">
+                      {product.price !== product.finalPrice && (
+                        <span className="text-gray-400 line-through mr-1">
+                          ₹{product.price}
+                        </span>
+                      )}
+                      <span className="text-blue-600 font-bold">
+                        ₹{product.finalPrice}
+                      </span>
+                    </div>
+
+                    <button 
+                      onClick={() => navigateToProduct(product._id)}
+                      className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
+                    >
+                      View Product
+                    </button>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Indicators */}
-            <div className="flex justify-center mt-8 gap-2">
-              {Array.from({ length: totalSlides }, (_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                    index === currentIndex ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                />
-              ))}
             </div>
           </div>
-        </div>
-
-        {/* </div> */}
+        ))}
       </div>
+    </div>
+  )}
+</div>
       <Footer />
     </>
   );
