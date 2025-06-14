@@ -13,6 +13,9 @@ import Shop from './Pages/Shop'
 import About from './Pages/About'
 import Register from './Pages/Register'
 import UserAccount from './Pages/UserAccount'
+import Otp from './Pages/Otp'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -33,6 +36,7 @@ function App() {
       <Route path='/about' element={<About/>}/>
       <Route path='/register' element={<Register/>}/>
       <Route path='/user' element={<UserAccount/>}/>
+      <Route path='/otp-login' element={<Otp/>}/>
     </Routes>
     {/* <Footer/> */}
      

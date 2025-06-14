@@ -4,50 +4,199 @@ import { X, Plus, Minus, Heart, RefreshCw, Gift,  } from 'lucide-react';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import {  applycouponAPI, cartCountAPI, checkoutAPI, getCouponsAPI, removeCartAPI, removeCouponAPI, updateCartQuantityAPI, viewcartAPI } from '../Services/cartAPI';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
+
 
 
 
 function Cart() {
    const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  
-    const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Google Home Smart Voice Activated Speaker',
-      price: 300,
-      quantity: 1,
-      image: 'https://i.pinimg.com/originals/e2/64/3a/e2643ac7dca80aefda710c077b2e28c2.jpg'
-    }
-  ]);
-  
-  const [couponCode, setCouponCode] = useState('');
-  const [selectedShipping, setSelectedShipping] = useState('free');
+const [cartItems, setCartItems] = useState([]);
+const [loading, setLoading] = useState(true);
+const [totalPrice, setTotalPrice] = useState(0); 
+const [cartCountNumber, setCartCountNumber] = useState(0);
+const [appliedCoupon, setAppliedCoupon] = useState(null);
+const [couponCode, setCouponCode] = useState('');  
+const [availableCoupons, setAvailableCoupons] = useState([]);
+const navigate = useNavigate()
+const [selectedShipping, setSelectedShipping] = useState('free');
 
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity === 0) {
-      removeItem(id);
+  useEffect(() => {
+  fetchCartItems();
+   fetchCartCount();
+    fetchAvailableCoupons();
+}, []);
+
+const fetchCartItems = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      toast.error("Please login to view cart.");
+      setLoading(false);
       return;
     }
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+
+    const res = await viewcartAPI(userId);
+    const items = res.cart?.items || [];
+
+    setCartItems(
+      items.map((item) => ({
+        id: item._id,
+        productId: item.product._id,
+        name: item.product.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.product.images?.[0]
+          ? `https://rigsdock.com/uploads/${item.product.images[0]}`
+          : "https://via.placeholder.com/150",
+      }))
     );
-  };
 
-  const removeItem = (id) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
+    setTotalPrice(res.totalPrice || 0);
+    setAppliedCoupon(res.cart?.coupon || null); // ✅ move this inside try block
+    setLoading(false);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load cart.");
+    setLoading(false);
+  }
+};
 
-  const applyCoupon = () => {
-    if (couponCode === 'GET20OFF') {
-      alert('Coupon applied successfully!');
-    } else {
-      alert('Invalid coupon code');
+
+
+const removeItem = async (id, productId) => {
+  try {
+    const userId = localStorage.getItem("userId");
+    const res = await removeCartAPI(userId, productId);
+    toast.success(res.message || "Item removed from cart");
+    fetchCartItems();
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to remove item from cart");
+  }
+};
+
+const updateQuantity = async (cartItemId, productId, action) => {
+  try {
+    const userId = localStorage.getItem("userId");
+    await updateCartQuantityAPI(userId, productId, action);
+    fetchCartItems(); 
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update quantity");
+  }
+};
+
+const fetchCartCount = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const res = await cartCountAPI(userId);
+    setCartCountNumber(res.cartCount || 0);
+  } catch (error) {
+    console.error("Failed to fetch cart count:", error);
+  }
+};
+
+
+const applyCoupon = async () => {
+  const userId = localStorage.getItem("userId");
+
+  if (!couponCode.trim()) {
+    toast.warn("Please enter a coupon code");
+    return;
+  }
+
+  try {
+    const res = await applycouponAPI(userId, couponCode.trim());
+
+    if (res.message?.toLowerCase().includes("invalid")) {
+      toast.error(res.message || "Invalid coupon code");
+      return;
     }
-  };
+
+    // Success response handling
+    toast.success(res.message || "Coupon applied successfully");
+
+    // Set discounted total price
+    if (res.newTotalPrice) {
+      setTotalPrice(res.newTotalPrice);
+    }
+
+    // Optional: Update cartItems if they might change (e.g., price adjustments)
+    const updatedItems = res.cart?.items.map((item) => ({
+      id: item._id,
+      productId: item.product._id,
+      name: item.product.name,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.product.images?.[0]
+        ? `https://rigsdock.com/uploads/${item.product.images[0]}`
+        : "https://via.placeholder.com/150",
+    }));
+
+    setCartItems(updatedItems || cartItems); // Use updated items if present
+  } catch (error) {
+    console.error("Coupon apply failed:", error);
+    toast.error("Something went wrong applying the coupon.");
+  }
+};
+
+const handleRemoveCoupon = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      toast.error("Please login to remove coupon.");
+      return;
+    }
+
+    const res = await removeCouponAPI(userId);
+
+    toast.success(res.message || "Coupon removed.");
+    setAppliedCoupon(null);
+    setCouponCode("");
+    fetchCartItems(); // Refresh the cart to reflect changes
+  } catch (error) {
+    console.error("Remove coupon error:", error);
+    toast.error("Failed to remove coupon.");
+  }
+};
+
+const fetchAvailableCoupons = async () => {
+  try {
+    const res = await getCouponsAPI();
+    // console.log("Fetched coupons:", res);
+    setAvailableCoupons(res?.coupons || []);
+  } catch (error) {
+    toast.error("Unable to load coupons.");
+  }
+};
+
+const handleCheckout = async () => {
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    toast.error("Please login first.");
+    return;
+  }
+  
+  try {
+    const res = await checkoutAPI(userId);
+    console.log("Checkout prepared successfully!", res);
+    toast.success("Checkout initialized!");
+    navigate("/checkout")
+  } catch (err) {
+    toast.error("Failed to create checkout.");
+    console.error(err);
+  }
+};
+
 
     const testimonials = [
     {
@@ -175,14 +324,29 @@ function Cart() {
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-8">Cart Summary</h1>
           
           {/* Coupon Banner */}
-          <div className="bg-green-100 border border-green-200 rounded-lg p-4 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <p className="text-green-700 text-base sm:text-lg">
-              Use GET20OFF coupon code to get 20% off on minimum order above $100
-            </p>
-            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-base font-medium transition-colors whitespace-nowrap">
-              GET20OFF
-            </button>
-          </div>
+{availableCoupons.length > 0 && availableCoupons
+  .filter((c) => c.status === "active") // Show only active coupons
+  .map((coupon) => (
+    <div key={coupon._id} className="bg-green-100 border border-green-200 rounded-lg p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <p className="text-green-700 text-base sm:text-lg">
+        Use <strong>{coupon.couponCode}</strong> to get 
+        {coupon.discountType === "percentage"
+          ? ` ${coupon.discountValue}%`
+          : ` $${coupon.discountValue}`} off
+        {coupon.minPurchaseAmount
+          ? ` on orders above $${coupon.minPurchaseAmount}`
+          : ""}
+        {coupon.firstPurchaseOnly ? " (First purchase only)" : ""}
+      </p>
+      <button
+        onClick={() => setCouponCode(coupon.couponCode)}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-base font-medium transition-colors whitespace-nowrap"
+      >
+        {coupon.couponCode}
+      </button>
+    </div>
+))}
+
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
@@ -204,7 +368,7 @@ function Cart() {
                   <div className="md:hidden">
                     <div className="flex items-start gap-4 mb-4">
                       <button 
-                        onClick={() => removeItem(item.id)}
+onClick={() => removeItem(item.id, item.productId)}
                         className="text-red-500 hover:text-red-700 mt-1"
                       >
                         <X size={20} />
@@ -223,14 +387,14 @@ function Cart() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+onClick={() => updateQuantity(item.id, item.productId, "decrease")}
                           className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                         >
                           <Minus size={16} />
                         </button>
                         <span className="font-medium min-w-[40px] text-center text-base">{item.quantity}</span>
                         <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+onClick={() => updateQuantity(item.id, item.productId, "increase")}
                           className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                         >
                           <Plus size={16} />
@@ -244,7 +408,7 @@ function Cart() {
                   <div className="hidden md:grid grid-cols-12 gap-4 items-center">
                     <div className="col-span-5 flex items-center gap-4">
                       <button 
-                        onClick={() => removeItem(item.id)}
+onClick={() => removeItem(item.id, item.productId)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <X size={20} />
@@ -262,14 +426,14 @@ function Cart() {
                     
                     <div className="col-span-3 flex items-center justify-center gap-3">
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+onClick={() => updateQuantity(item.id, item.productId, "decrease")}
                         className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                       >
                         <Minus size={16} />
                       </button>
                       <span className="font-medium min-w-[40px] text-center text-base">{item.quantity}</span>
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+onClick={() => updateQuantity(item.id, item.productId, "increase")}
                         className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                       >
                         <Plus size={16} />
@@ -284,26 +448,48 @@ function Cart() {
               ))}
 
               {/* Coupon Section */}
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <input
-                    type="text"
-                    placeholder="Coupon code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                  />
-                  <button
-                    onClick={applyCoupon}
-                    className="bg-blue-800 hover:bg-blue-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap text-base"
-                  >
-                    Apply Coupon
-                  </button>
-                  <Link to='/shop' className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap text-base">
-                    Shop More 
-                  </Link>
-                </div>
-              </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+    <input
+      type="text"
+      placeholder="Coupon code"
+      value={couponCode}
+      onChange={(e) => setCouponCode(e.target.value)}
+      disabled={!!appliedCoupon}
+      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+    />
+
+    {!appliedCoupon ? (
+      <button
+        onClick={applyCoupon}
+        className="bg-blue-800 hover:bg-blue-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap text-base"
+      >
+        Apply Coupon
+      </button>
+    ) : (
+      <button
+        onClick={handleRemoveCoupon}
+        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap text-base"
+      >
+        Remove Coupon
+      </button>
+    )}
+
+    <Link
+      to="/shop"
+      className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap text-base"
+    >
+      Shop More
+    </Link>
+  </div>
+
+  {appliedCoupon && (
+    <p className="text-green-700 text-sm mt-2">
+      ✅ Coupon applied successfully.
+    </p>
+  )}
+</div>
+
 
               {/* Features Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-purple-50 p-6 rounded-lg">
@@ -336,9 +522,10 @@ function Cart() {
             {/* Cart Totals Section */}
             <div className="lg:col-span-1">
               <div className="bg-white p-6 rounded-lg shadow-sm sticky top-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Cart totals</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Cart totals</h2>
+                <p className="text-gray-600 text-sm">Total items in cart: {cartCountNumber}</p>
                 
-                <div className="space-y-4 mb-6">
+                <div className="space-y-4 mb-6 mt-5">
                   <div className="flex justify-between text-base">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-blue-600 font-semibold text-lg">${subtotal}</span>
@@ -396,7 +583,7 @@ function Cart() {
                   </div>
                 </div>
                 
-                <button className="w-full bg-blue-800 hover:bg-blue-800 text-white font-semibold py-4 rounded-lg transition-colors text-base">
+                <button onClick={handleCheckout}  className="w-full bg-blue-800 hover:bg-blue-800 text-white font-semibold py-4 rounded-lg transition-colors text-base">
                   Proceed To Checkout
                 </button>
               </div>
@@ -575,6 +762,8 @@ function Cart() {
     </div>
     
     </div>
+            <ToastContainer position="top-right" autoClose={3000} />
+    
     <Footer/>
     </>
     

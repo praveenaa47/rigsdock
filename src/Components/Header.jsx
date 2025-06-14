@@ -16,6 +16,8 @@ import {
   Store
 } from "lucide-react";
 import { Link } from 'react-router-dom';
+import { searchProductAPI } from '../Services/allAPIs';
+
 
 function Header() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -23,6 +25,42 @@ function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [searchResults, setSearchResults] = useState([]); // State for search results
+  const [searchError, setSearchError] = useState(null); // State for search errors
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (!e.target.value) {
+      setSearchResults([]);
+      setSearchError(null);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const response = await searchProductAPI(searchQuery);
+      setSearchResults(response.products || []);
+    } catch (error) {
+      setSearchError('Failed to fetch search results. Please try again.');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchError(null);
+  };
   
   const cartItems = [
     {
@@ -30,7 +68,7 @@ function Header() {
       title: "Phonokart USB Type C OTG Cable",
       price: 450,
       quantity: 1,
-      image: "https://i.postimg.cc/BnbGWbqh/otg.png",
+      image: "https://www.bhphotovideo.com/images/images2500x2500/logitech_910_004277_m310_xl_wireless_mouse_1413247.jpg",
     },
   ];
 
@@ -77,7 +115,7 @@ function Header() {
   ];
 
   return (
-    <>
+   <>
       <header className="shadow-sm border-b">
         {/* Top Header */}
         <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-7" style={{ backgroundColor: "rgb(10, 95, 191)" }}>
@@ -103,18 +141,67 @@ function Header() {
           </div>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:flex items-center border border-[rgb(10,95,191)] rounded-full overflow-hidden w-2/5 bg-white">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="flex-1 px-4 py-2 outline-none"
-            />
-            <button
-              className="px-4 py-2 text-white font-semibold flex items-center gap-1"
-              style={{ backgroundColor: "rgb(10, 95, 191)" }}
-            >
-              <Search size={16} /> Search
-            </button>
+          <div className="hidden lg:flex items-center border border-[rgb(10,95,191)] rounded-full overflow-hidden w-2/5 bg-white relative">
+            <form onSubmit={handleSearch} className="flex flex-1">
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="flex-1 px-4 py-2 outline-none"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="px-2 text-gray-500"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 text-white font-semibold flex items-center gap-1"
+                style={{ backgroundColor: "rgb(10, 95, 191)" }}
+                disabled={isSearching}
+              >
+                <Search size={16} /> {isSearching ? 'Searching...' : 'Search'}
+              </button>
+            </form>
+
+            {/* Search Results Dropdown */}
+            {(searchResults.length > 0 || searchError) && (
+              <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                {searchError && (
+                  <div className="p-4 text-red-600 text-center">{searchError}</div>
+                )}
+                {searchResults.length > 0 && (
+                  <div className="divide-y divide-gray-100">
+                    {searchResults.map((product) => (
+                      <Link
+                        key={product._id}
+                        to={`/product/${product._id}`}
+                        className="flex items-center p-4 hover:bg-gray-50 transition-colors"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSearchResults([]);
+                        }}
+                      >
+                        <img
+                          src={product.images[0]} // Assuming images are accessible URLs
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded mr-4"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{product.name}</p>
+                          <p className="text-sm text-blue-600">₹{product.finalPrice}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Search Button */}
@@ -154,20 +241,68 @@ function Header() {
 
         {/* Mobile Search Bar */}
         {mobileSearchOpen && (
-          <div className="lg:hidden px-4 py-3 bg-white border-t">
-            <div className="flex items-center border border-gray-300 rounded-full overflow-hidden bg-white">
+          <div className="lg:hidden px-4 py-3 bg-white border-t relative">
+            <form onSubmit={handleSearch} className="flex items-center border border-gray-300 rounded-full overflow-hidden bg-white">
               <input
                 type="text"
                 placeholder="Search products..."
                 className="flex-1 px-4 py-2 outline-none text-sm"
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="px-2 text-gray-500"
+                >
+                  <X size={14} />
+                </button>
+              )}
               <button
+                type="submit"
                 className="px-4 py-2 text-white font-semibold flex items-center gap-1"
                 style={{ backgroundColor: "rgb(10, 95, 191)" }}
+                disabled={isSearching}
               >
-                <Search size={14} />
+                <Search size={14} /> {isSearching ? 'Searching...' : ''}
               </button>
-            </div>
+            </form>
+
+            {/* Mobile Search Results */}
+            {(searchResults.length > 0 || searchError) && (
+              <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto mx-4">
+                {searchError && (
+                  <div className="p-4 text-red-600 text-center">{searchError}</div>
+                )}
+                {searchResults.length > 0 && (
+                  <div className="divide-y divide-gray-100">
+                    {searchResults.map((product) => (
+                      <Link
+                        key={product._id}
+                        to={`/product/${product._id}`}
+                        className="flex items-center p-4 hover:bg-gray-50 transition-colors"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSearchResults([]);
+                          setMobileSearchOpen(false);
+                        }}
+                      >
+                        <img
+                          src={product.images[0]} // Assuming images are accessible URLs
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded mr-4"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{product.name}</p>
+                          <p className="text-sm text-blue-600">₹{product.finalPrice}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -375,17 +510,17 @@ function Header() {
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
               <p className="text-xl font-semibold mb-2">Your cart is empty</p>
               <p className="text-gray-600 mb-6">No items in your cart. Go on, fill it up with something you love!</p>
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-full">
-                Start Shopping Now
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-full">
+                Start Shopping
               </button>
             </div>
           ) : (
             <>
               {/* Free delivery bar */}
               <div className="px-4 py-3 border-b">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-full h-1 bg-green-200 rounded">
-                    <div className="h-1 bg-green-500 rounded" style={{ width: "100%" }}></div>
+                <div className="flex items-center mb-2">
+                  <div className="w-full h-2 bg-gray-200 rounded">
+                    <div className="h-50% bg-green-600 rounded" style={{ width: "100%" }}></div>
                   </div>
                   <img
                     src="https://cdn-icons-png.flaticon.com/512/891/891419.png"
@@ -393,19 +528,19 @@ function Header() {
                     alt="truck"
                   />
                 </div>
-                <p className="text-sm text-center font-medium text-gray-800">Congratulations! Your order is eligible for FREE Delivery.</p>
+                <p className="text-sm text-center text-gray-700">Congratulations! Your order qualifies for FREE Delivery.</p>
               </div>
 
-              {/* Scrollable cart content */}
+              {/* Scrollable cart items */}
               <div className="flex-1 overflow-y-auto p-4">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex items-start justify-between mb-4">
                     <img src={item.image} alt={item.title} className="w-14 h-14 rounded object-cover" />
                     <div className="flex-1 ml-3">
                       <p className="text-sm font-medium">{item.title}</p>
-                      <p className="text-sm">1 × <span className="text-blue-600 font-semibold">${item.price}</span></p>
+                      <p className="text-sm">1 × <span className="text-blue-600 font-semibold">₹{item.price}</span></p>
                     </div>
-                    <button className="text-red-500 text-xl font-bold">×</button>
+                    <button className="text-red-600 text-xl font-bold">×</button>
                   </div>
                 ))}
               </div>
@@ -415,12 +550,12 @@ function Header() {
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-semibold text-lg">Subtotal:</span>
                   <span className="text-blue-600 font-semibold text-lg">
-                    ${cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)}
+                    ₹{cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)}
                   </span>
                 </div>
                 <div className="flex gap-3">
                   <Link to='/cart' className="flex-1 text-center bg-neutral-900 text-white font-semibold py-2 rounded-full">View Cart</Link>
-                  <Link to='/checkout' className="flex-1 text-center bg-blue-800 hover:bg-blue-800 text-white font-semibold py-2 rounded-full">Checkout</Link>
+                  <Link to='/checkout' className="flex-1 text-center bg-blue-600 text-white font-semibold py-2 rounded-full">Checkout</Link>
                 </div>
               </div>
             </>
