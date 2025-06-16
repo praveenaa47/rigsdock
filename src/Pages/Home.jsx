@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { addToWishlistAPI } from "../Services/wishlistAPI";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { viewMainCategoriesAPI } from "../Services/categoryAPI";
+import { viewCategoriesAPI, viewMainCategoriesAPI } from "../Services/categoryAPI";
 
 
 
@@ -141,9 +141,13 @@ const brands = [
 
 function Home() {
   const [isDark, setIsDark] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [dealProducts, setDealProducts] = useState([]);
+  const [dealCurrentIndex, setDealCurrentIndex] = useState(0);
+  const [onSaleCurrentIndex, setOnSaleCurrentIndex] = useState(0);
+  const [topRatedCurrentIndex, setTopRatedCurrentIndex] = useState(0);
+  const [newArrivalsCurrentIndex, setNewArrivalsCurrentIndex] = useState(0); 
+   const [dealProducts, setDealProducts] = useState([]);
   const [topRatedProducts, setTopRatedProducts] = useState([]);
+  
   const [categories, setCategories] = useState([]);
   const [timeLeft, setTimeLeft] = useState({
     days: 458,
@@ -219,7 +223,7 @@ useEffect(() => {
   useEffect(() => {
   const fetchCategories = async () => {
     try {
-      const res = await viewMainCategoriesAPI();
+      const res = await viewMainCategoriesAPI(); 
       setCategories(res.mainCategories);
     } catch (error) {
       console.error("Error fetching main Categories", error);
@@ -344,13 +348,13 @@ useEffect(() => {
     },
   ];
   // Get items per slide based on screen size
-  const getItemsPerSlide = () => {
+ const getItemsPerSlide = () => {
     if (typeof window !== "undefined") {
       if (window.innerWidth >= 1280) return 5; // xl
       if (window.innerWidth >= 1024) return 4; // lg
       if (window.innerWidth >= 768) return 3; // md
-      if (window.innerWidth >= 640) return 2; 
-      return 1; 
+      if (window.innerWidth >= 640) return 2;
+      return 1;
     }
     return 5;
   };
@@ -370,19 +374,60 @@ useEffect(() => {
   const totalSlides = Math.ceil(products.length / itemsPerSlide);
   const maxIndex = totalSlides - 1;
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+  const nextDealSlide = () => {
+    setDealCurrentIndex(prev => 
+      prev >= Math.ceil(dealProducts.length / 1) - 1 ? 0 : prev + 1
+    );
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+  const prevDealSlide = () => {
+    setDealCurrentIndex(prev => 
+      prev <= 0 ? Math.ceil(dealProducts.length / 1) - 1 : prev - 1
+    );
   };
 
-  const getCurrentProducts = () => {
-    const start = currentIndex * itemsPerSlide;
-    const end = start + itemsPerSlide;
-    return products.slice(start, end);
+  const nextOnSaleSlide = () => {
+    setOnSaleCurrentIndex(prev => 
+      prev >= Math.ceil(latestProducts.length / itemsPerSlide) - 1 ? 0 : prev + 1
+    );
   };
+
+  const prevOnSaleSlide = () => {
+    setOnSaleCurrentIndex(prev => 
+      prev <= 0 ? Math.ceil(latestProducts.length / itemsPerSlide) - 1 : prev - 1
+    );
+  };
+
+  const nextTopRatedSlide = () => {
+    setTopRatedCurrentIndex(prev => 
+      prev >= Math.ceil(topRatedProducts.length / itemsPerSlide) - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevTopRatedSlide = () => {
+    setTopRatedCurrentIndex(prev => 
+      prev <= 0 ? Math.ceil(topRatedProducts.length / itemsPerSlide) - 1 : prev - 1
+    );
+  };
+
+  const nextNewArrivalsSlide = () => {
+    setNewArrivalsCurrentIndex(prev => 
+      prev >= Math.ceil(latestProducts.length / itemsPerSlide) - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevNewArrivalsSlide = () => {
+    setNewArrivalsCurrentIndex(prev => 
+      prev <= 0 ? Math.ceil(latestProducts.length / itemsPerSlide) - 1 : prev - 1
+    );
+  };
+
+
+    // const getCurrentProducts = () => {
+    //   const start = currentIndex * itemsPerSlide;
+    //   const end = start + itemsPerSlide;
+    //   return products.slice(start, end);
+    // };
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -506,7 +551,6 @@ useEffect(() => {
       >
         <div className="container mx-auto px-2 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Weekly Deal Offer Card */}
             {/* Weekly Deal Offer Card - Slider Version */}
 <div className="lg:w-80 flex-shrink-0">
   <div
@@ -532,9 +576,8 @@ useEffect(() => {
         <div className="overflow-hidden">
           <div
             className="flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          >
-            {dealProducts.map((deal, index) => (
+ style={{ transform: `translateX(-${dealCurrentIndex * 100}%)` }} >
+             {dealProducts.map((deal) => (
               <div key={deal._id} className="w-full flex-shrink-0 px-2">
                 <div className="text-center mb-6">
                   <div className="absolute top-4 right-4">
@@ -623,13 +666,13 @@ useEffect(() => {
         {dealProducts.length > 1 && (
           <>
             <button
-              onClick={() => setCurrentIndex(prev => prev === 0 ? dealProducts.length - 1 : prev - 1)}
+              onClick={prevDealSlide}
               className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md hover:bg-white transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setCurrentIndex(prev => prev === dealProducts.length - 1 ? 0 : prev + 1)}
+              onClick={nextDealSlide}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md hover:bg-white transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
@@ -651,7 +694,7 @@ useEffect(() => {
     <h2 className="text-2xl font-bold">On Sale Products</h2>
     <div className="flex gap-2">
       <button
-        onClick={prevSlide}
+        onClick={prevOnSaleSlide}
         className={`p-2 rounded-full ${
           isDark
             ? "bg-gray-700 hover:bg-gray-600"
@@ -661,7 +704,7 @@ useEffect(() => {
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
-        onClick={nextSlide}
+        onClick={nextOnSaleSlide}
         className={`p-2 rounded-full ${
           isDark
             ? "bg-gray-700 hover:bg-gray-600"
@@ -683,8 +726,9 @@ useEffect(() => {
     </div>
   ) : (
     <div className="relative overflow-hidden">
-      <div className="flex transition-transform duration-500 ease-in-out">
-        {Array.from({ length: Math.ceil(latestProducts.length / itemsPerSlide) }, (_, slideIndex) => (
+      <div className="flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${onSaleCurrentIndex * 100}%)` }}>
+        {Array.from({  length: Math.ceil(latestProducts.length / itemsPerSlide) }, (_, slideIndex) => (
           <div key={slideIndex} className="w-full flex-shrink-0">
             <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {latestProducts
@@ -693,69 +737,76 @@ useEffect(() => {
                   (slideIndex + 1) * itemsPerSlide
                 )
                 .map((product) => (
-                  <div
-                    key={product._id}
-                    className={`rounded-xl p-4 ${
-                      isDark ? "bg-gray-800" : "bg-white"
-                    } shadow-md hover:shadow-lg transition-shadow relative`}
-                  >
-                    {product.price !== product.finalPrice && (
-                      <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
-                        Sale
-                      </span>
-                    )}
-
-                   <button
-  onClick={(e) => {
-    e.stopPropagation();
-    handleAddToWishlist(product._id);
-  }}
-  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                 <div
+  key={product._id}
+  className={`rounded-xl p-4 flex flex-col h-full ${
+    isDark ? "bg-gray-800" : "bg-white"
+  } shadow-md hover:shadow-lg transition-shadow relative`}
 >
-  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-</button>
+  {/* Sale Badge */}
+  {product.price !== product.finalPrice && (
+    <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
+      Sale
+    </span>
+  )}
 
-                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-                      <img
-                        src={
-                          product.images && product.images.length > 0
-                            ? `${SERVER_URL}/uploads/${product.images[0]}`
-                            : "https://via.placeholder.com/300"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300";
-                        }}
-                      />
-                    </div>
+  {/* Wishlist Button */}
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      handleAddToWishlist(product._id);
+    }}
+    className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+  >
+    <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+  </button>
 
-                    <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
-                      {product.name}
-                    </h3>
+  {/* Product Image */}
+  <div className="aspect-square mb-3 overflow-hidden rounded-lg flex items-center justify-center bg-gray-100">
+    <img
+      src={
+        product.images && product.images.length > 0
+          ? `${SERVER_URL}/uploads/${product.images[0]}`
+          : "https://via.placeholder.com/300"
+      }
+      alt={product.name}
+      className="w-full h-full object-contain p-2"
+      onError={(e) => {
+        e.target.src = "https://via.placeholder.com/300";
+      }}
+    />
+  </div>
 
-                    <div className="flex text-yellow-400 text-sm mb-1">
-                      {renderStars(product.averageRating)}
-                    </div>
+  {/* Product Info */}
+  <div className="flex-grow">
+    <h3 className="text-sm font-semibold mb-1 line-clamp-2 h-10">
+      {product.name}
+    </h3>
 
-                    <div className="text-sm text-center mb-2">
-                      {product.price !== product.finalPrice && (
-                        <span className="text-gray-400 line-through mr-1">
-                          ₹{product.price}
-                        </span>
-                      )}
-                      <span className="text-blue-600 font-bold">
-                        ₹{product.finalPrice}
-                      </span>
-                    </div>
+    <div className="flex text-yellow-400 text-sm mb-1">
+      {renderStars(product.averageRating)}
+    </div>
 
-                    <button 
-                      onClick={() => navigate(`/product-details/${product._id}`)}
-                      className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
-                    >
-                      View Product
-                    </button>
-                  </div>
+    <div className="text-sm mb-3">
+      {product.price !== product.finalPrice && (
+        <span className="text-gray-400 line-through mr-1">
+          ₹{product.price}
+        </span>
+      )}
+      <span className="text-blue-600 font-bold">
+        ₹{product.finalPrice}
+      </span>
+    </div>
+  </div>
+
+  {/* View Product Button */}
+  <button 
+    onClick={() => navigateToProduct(product._id)}
+    className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors mt-auto"
+  >
+    View Product
+  </button>
+</div>
                 ))}
             </div>
           </div>
@@ -772,7 +823,7 @@ useEffect(() => {
     <h2 className="text-2xl font-bold" id="top-rated-section">Top Rated Item's</h2>
     <div className="flex gap-2">
       <button
-        onClick={prevSlide}
+        onClick={prevTopRatedSlide}
         className={`p-2 rounded-full ${
           isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
         } shadow-md transition-colors`}
@@ -780,7 +831,7 @@ useEffect(() => {
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
-        onClick={nextSlide}
+        onClick={nextTopRatedSlide}
         className={`p-2 rounded-full ${
           isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
         } shadow-md transition-colors`}
@@ -798,7 +849,8 @@ useEffect(() => {
     <div className="text-center py-10 text-red-500">{error}</div>
   ) : (
     <div className="relative overflow-hidden">
-      <div className="flex transition-transform duration-500 ease-in-out">
+      <div className="flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${topRatedCurrentIndex * 100}%)` }}>
         {Array.from({ length: Math.ceil(topRatedProducts.length / itemsPerSlide) }, (_, slideIndex) => (
           <div key={slideIndex} className="w-full flex-shrink-0">
             <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -809,69 +861,75 @@ useEffect(() => {
                 )
                 .map((product) => (
                   <div
-                    key={product._id}
-                    className={`rounded-xl p-4 ${
-                      isDark ? "bg-gray-800" : "bg-white"
-                    } shadow-md hover:shadow-lg transition-shadow relative`}
-                  >
-                    {product.price !== product.finalPrice && (
-                      <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
-                        Sale
-                      </span>
-                    )}
-
-                  <button
-  onClick={(e) => {
-    e.stopPropagation();
-    handleAddToWishlist(product._id);
-  }}
-  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+  key={product._id}
+  className={`rounded-xl p-4 flex flex-col h-full ${
+    isDark ? "bg-gray-800" : "bg-white"
+  } shadow-md hover:shadow-lg transition-shadow relative`}
 >
-  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-</button>
+  {/* Sale Badge */}
+  {product.price !== product.finalPrice && (
+    <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
+      Sale
+    </span>
+  )}
 
+  {/* Wishlist Button */}
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      handleAddToWishlist(product._id);
+    }}
+    className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+  >
+    <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+  </button>
 
-                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-                      <img
-                        src={
-                          product.images && product.images.length > 0
-                            ? `${SERVER_URL}/uploads/${product.images[0]}`
-                            : "https://via.placeholder.com/300"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300";
-                        }}
-                      />
-                    </div>
+  {/* Product Image */}
+  <div className="aspect-square mb-3 overflow-hidden rounded-lg flex items-center justify-center bg-gray-100">
+    <img
+      src={
+        product.images && product.images.length > 0
+          ? `${SERVER_URL}/uploads/${product.images[0]}`
+          : "https://via.placeholder.com/300"
+      }
+      alt={product.name}
+      className="w-full h-full object-contain p-2"
+      onError={(e) => {
+        e.target.src = "https://via.placeholder.com/300";
+      }}
+    />
+  </div>
 
-                    <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
-                      {product.name}
-                    </h3>
+  {/* Product Info */}
+  <div className="flex-grow">
+    <h3 className="text-sm font-semibold mb-1 line-clamp-2 h-10">
+      {product.name}
+    </h3>
 
-                    <div className="flex text-yellow-400 text-sm mb-1">
-                      {renderStars(product.averageRating)}
-                    </div>
+    <div className="flex text-yellow-400 text-sm mb-1">
+      {renderStars(product.averageRating)}
+    </div>
 
-                    <div className="text-sm text-center mb-2">
-                      {product.price !== product.finalPrice && (
-                        <span className="text-gray-400 line-through mr-1">
-                          ₹{product.price}
-                        </span>
-                      )}
-                      <span className="text-blue-600 font-bold">
-                        ₹{product.finalPrice}
-                      </span>
-                    </div>
+    <div className="text-sm mb-3">
+      {product.price !== product.finalPrice && (
+        <span className="text-gray-400 line-through mr-1">
+          ₹{product.price}
+        </span>
+      )}
+      <span className="text-blue-600 font-bold">
+        ₹{product.finalPrice}
+      </span>
+    </div>
+  </div>
 
-                    <button 
-                      onClick={() => navigateToProduct(product._id)}
-                      className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
-                    >
-                      View Product
-                    </button>
-                  </div>
+  {/* View Product Button */}
+  <button 
+    onClick={() => navigateToProduct(product._id)}
+    className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors mt-auto"
+  >
+    View Product
+  </button>
+</div>
                 ))}
             </div>
           </div>
@@ -973,7 +1031,7 @@ useEffect(() => {
     <h2 className="text-2xl font-bold " id="newarrival">New Arrivals</h2>
     <div className="flex gap-2">
       <button
-        onClick={prevSlide}
+        onClick={prevNewArrivalsSlide}
         className={`p-2 rounded-full ${
           isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
         } shadow-md transition-colors`}
@@ -981,7 +1039,7 @@ useEffect(() => {
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
-        onClick={nextSlide}
+        onClick={nextNewArrivalsSlide}
         className={`p-2 rounded-full ${
           isDark ? "bg-gray-700 hover:bg-gray-600" : "bg-white hover:bg-gray-100"
         } shadow-md transition-colors`}
@@ -999,8 +1057,9 @@ useEffect(() => {
     <div className="text-center py-10 text-red-500">{error}</div>
   ) : (
     <div className="relative overflow-hidden">
-      <div className="flex transition-transform duration-500 ease-in-out">
-        {Array.from({ length: Math.ceil(latestProducts.length / itemsPerSlide) }, (_, slideIndex) => (
+      <div className="flex transition-transform duration-500 ease-in-out"
+       style={{ transform: `translateX(-${newArrivalsCurrentIndex * 100}%)` }}>
+        {Array.from({length: Math.ceil(latestProducts.length / itemsPerSlide) }, (_, slideIndex) => (
           <div key={slideIndex} className="w-full flex-shrink-0">
             <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {latestProducts
@@ -1009,70 +1068,76 @@ useEffect(() => {
                   (slideIndex + 1) * itemsPerSlide
                 )
                 .map((product) => (
-                  <div
-                    key={product._id}
-                    className={`rounded-xl p-4 ${
-                      isDark ? "bg-gray-800" : "bg-white"
-                    } shadow-md hover:shadow-lg transition-shadow relative`}
-                  >
-                    {product.price !== product.finalPrice && (
-                      <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
-                        Sale
-                      </span>
-                    )}
-
-                    <button
-  onClick={(e) => {
-    e.stopPropagation();
-    handleAddToWishlist(product._id);
-  }}
-  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                 <div
+  key={product._id}
+  className={`rounded-xl p-4 flex flex-col h-full ${
+    isDark ? "bg-gray-800" : "bg-white"
+  } shadow-md hover:shadow-lg transition-shadow relative`}
 >
-  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-</button>
+  {/* Sale Badge */}
+  {product.price !== product.finalPrice && (
+    <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded">
+      Sale
+    </span>
+  )}
 
+  {/* Wishlist Button */}
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      handleAddToWishlist(product._id);
+    }}
+    className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+  >
+    <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+  </button>
 
-                    <div className="aspect-square mb-3 overflow-hidden rounded-lg">
-                      <img
-                        src={
-                          product.images && product.images.length > 0
-                            ? `${SERVER_URL}/uploads/${product.images[0]}`
-                            : "https://via.placeholder.com/300"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300";
-                        }}
-                      />
-                    </div>
+  {/* Product Image */}
+  <div className="aspect-square mb-3 overflow-hidden rounded-lg flex items-center justify-center bg-gray-100">
+    <img
+      src={
+        product.images && product.images.length > 0
+          ? `${SERVER_URL}/uploads/${product.images[0]}`
+          : "https://via.placeholder.com/300"
+      }
+      alt={product.name}
+      className="w-full h-full object-contain p-2"
+      onError={(e) => {
+        e.target.src = "https://via.placeholder.com/300";
+      }}
+    />
+  </div>
 
-                    <h3 className="text-sm font-semibold mb-1 min-h-[40px]">
-                      {product.name}
-                    </h3>
+  {/* Product Info */}
+  <div className="flex-grow">
+    <h3 className="text-sm font-semibold mb-1 line-clamp-2 h-10">
+      {product.name}
+    </h3>
 
-                    <div className="flex text-yellow-400 text-sm mb-1">
-                      {renderStars(product.averageRating)}
-                    </div>
+    <div className="flex text-yellow-400 text-sm mb-1">
+      {renderStars(product.averageRating)}
+    </div>
 
-                    <div className="text-sm text-center mb-2">
-                      {product.price !== product.finalPrice && (
-                        <span className="text-gray-400 line-through mr-1">
-                          ₹{product.price}
-                        </span>
-                      )}
-                      <span className="text-blue-600 font-bold">
-                        ₹{product.finalPrice}
-                      </span>
-                    </div>
+    <div className="text-sm mb-3">
+      {product.price !== product.finalPrice && (
+        <span className="text-gray-400 line-through mr-1">
+          ₹{product.price}
+        </span>
+      )}
+      <span className="text-blue-600 font-bold">
+        ₹{product.finalPrice}
+      </span>
+    </div>
+  </div>
 
-                    <button 
-                      onClick={() => navigateToProduct(product._id)}
-                      className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
-                    >
-                      View Product
-                    </button>
-                  </div>
+  {/* View Product Button */}
+  <button 
+    onClick={() => navigateToProduct(product._id)}
+    className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors mt-auto"
+  >
+    View Product
+  </button>
+</div>
                 ))}
             </div>
           </div>

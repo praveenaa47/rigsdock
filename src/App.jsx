@@ -16,6 +16,7 @@ import UserAccount from './Pages/UserAccount'
 import Otp from './Pages/Otp'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Blog from './Pages/Blog'
 
 
 
@@ -37,6 +38,7 @@ function App() {
       <Route path='/register' element={<Register/>}/>
       <Route path='/user' element={<UserAccount/>}/>
       <Route path='/otp-login' element={<Otp/>}/>
+      <Route path='/blog' element={<Blog/>}/>
     </Routes>
     {/* <Footer/> */}
      

@@ -26,7 +26,7 @@ export const viewCategoriesAPI = async (mainCatId) => {
     console.error('Failed to register', error);
     throw error;
   }
-};
+}
 
 // view sub categories
 export const viewSubCategoriesAPI = async (mainCatId, catId) => {

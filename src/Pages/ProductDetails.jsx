@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Star } from "lucide-react";
+import { Link, Star } from "lucide-react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getSimilarProductsAPI, viewProductsByIdAPI } from "../Services/allAPIs";
 import { addToWishlistAPI } from "../Services/wishlistAPI";
 import { toast, ToastContainer } from "react-toastify";
@@ -16,6 +16,15 @@ const ProductDetail = () => {
   const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
   const [productDetails, setProductDetails] = useState([]);
   const [similarProducts, setSimilarProducts] = useState([]);
+  const navigate = useNavigate()
+
+const handleViewProducts = (productId) => {
+  // Force a page reload by using window.location if needed
+  window.location.href = `/product-details/${productId}`;
+  
+  // Or alternatively, force a navigation with state reset
+  // navigate(`/product-details/${productId}`, { replace: true });
+};
 
   const productId = useParams();
   const SERVER_URL = "https://rigsdock.com";
@@ -325,43 +334,50 @@ const handleAddtoCart= async ()=>{
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-         {similarProducts.map((product) => (
-  <div
-    key={product._id}
-    className="rounded-lg sm:rounded-xl p-2 sm:p-4 bg-white shadow-sm sm:shadow-md hover:shadow-lg transition-shadow relative"
-  >
-    {product.originalPrice && (
-      <span className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-yellow-400 text-black text-2xs sm:text-xs font-bold px-1 sm:px-2 py-0.5 rounded">
-        {Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) * 100
-        )}%
-      </span>
-    )}
-    <div className="aspect-square mb-2 sm:mb-3 overflow-hidden rounded-lg">
-      <img
-        src={`https://rigsdock.com/uploads/${product.images[0]}`}
-        alt={product.name}
-        className="w-full h-full object-cover"
-      />
-    </div>
-    <h3 className="text-xs sm:text-sm font-semibold mb-1 min-h-[36px] sm:min-h-[40px] line-clamp-2">
-      {product.name}
-    </h3>
-    <div className="flex text-yellow-400 text-xs sm:text-sm mb-1">
-      {renderStars(product.rating || 0)}
-    </div>
-    <div className="text-xs sm:text-sm text-center">
+ {similarProducts.map((product) => (
+    <div
+      key={product._id}
+      className="rounded-lg sm:rounded-xl p-2 sm:p-4 bg-white shadow-sm sm:shadow-md hover:shadow-lg transition-shadow relative"
+    >
       {product.originalPrice && (
-        <span className="text-gray-400 line-through mr-1">
-          ${product.originalPrice}
+        <span className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-yellow-400 text-black text-2xs sm:text-xs font-bold px-1 sm:px-2 py-0.5 rounded">
+          {Math.round(
+            ((product.originalPrice - product.price) / product.originalPrice) * 100
+          )}%
         </span>
       )}
-      <span className="text-blue-600 font-bold">
-        ${product.finalPrice || product.price}
-      </span>
+      <div className="aspect-square mb-2 sm:mb-3 overflow-hidden rounded-lg">
+        <img
+          src={`https://rigsdock.com/uploads/${product.images[0]}`}
+          alt={product.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <h3 className="text-xs sm:text-sm font-semibold mb-1 min-h-[36px] sm:min-h-[40px] line-clamp-2">
+        {product.name}
+      </h3>
+      <div className="flex text-yellow-400 text-xs sm:text-sm mb-1">
+        {renderStars(product.rating || 0)}
+      </div>
+      <div className="text-xs sm:text-sm text-center mb-2">
+        {product.originalPrice && (
+          <span className="text-gray-400 line-through mr-1">
+            ${product.originalPrice}
+          </span>
+        )}
+        <span className="text-blue-600 font-bold">
+          ${product.finalPrice || product.price}
+        </span>
+      </div>
+      {/* Add View Product Button */}
+      <button 
+  onClick={() => handleViewProducts(product._id)}
+  className="block w-full text-center bg-blue-800 text-white text-xs sm:text-sm font-medium py-1 sm:py-2 rounded"
+>
+  view product
+</button>
     </div>
-  </div>
-))}
+  ))}
 
         </div>
         

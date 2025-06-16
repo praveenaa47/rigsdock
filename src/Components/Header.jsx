@@ -396,6 +396,8 @@ function Header() {
             <Link to="/about" className="hover:text-blue-600 transition-colors">About</Link>
             <div className="h-4 w-px bg-gray-400"></div>
             <Link to="/user" className="hover:text-blue-600 transition-colors">MY Account</Link>
+            <div className="h-4 w-px bg-gray-400"></div>
+            <Link to="/blog" className="hover:text-blue-600 transition-colors">Blog</Link>
           </div>
         </div>
 
@@ -487,6 +489,7 @@ function Header() {
             <Link to="/seller" className="block py-2 text-gray-700">Become a Seller</Link>
             <Link to="/about" className="block py-2 text-gray-700">About Us</Link>
             <Link to="/user" className="block py-2 text-gray-700">My Account</Link>
+            <Link to="/user" className="block py-2 text-gray-700">Blog</Link>
           </div>
         </div>
       </div>

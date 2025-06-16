@@ -51,8 +51,8 @@ function Wishlist() {
 };
 
   const addToCart = (item) => {
-    console.log("Adding to cart:", item);
-    alert(`${item.name} added to cart!`);
+    // toast.success("Adding to cart:", item);
+    toast.success(`${item.name} added to cart!`);
   };
 
   return (
