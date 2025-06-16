@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { addToWishlistAPI } from "../Services/wishlistAPI";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { viewMainCategoriesAPI } from "../Services/categoryAPI";
 
 
 
@@ -143,6 +144,7 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dealProducts, setDealProducts] = useState([]);
   const [topRatedProducts, setTopRatedProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [timeLeft, setTimeLeft] = useState({
     days: 458,
     hours: 4,
@@ -213,6 +215,18 @@ useEffect(() => {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await viewMainCategoriesAPI();
+      setCategories(res.mainCategories);
+    } catch (error) {
+      console.error("Error fetching main Categories", error);
+    }
+  };
+  fetchCategories();
+}, []);
 
   const products = [
     {
@@ -914,7 +928,7 @@ useEffect(() => {
               <div>
                 <p className="text-sm font-semibold">50% Discount</p>
                 <h3 className="text-2xl font-bold leading-tight mt-2">
-                  Best Shopping <br /> iPhone's
+                  Best Shopping <br /> iPhone'<s></s>
                 </h3>
               </div>
               <img
@@ -926,33 +940,29 @@ useEffect(() => {
 
             {/* Category Grid */}
             <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {categories.map((cat, idx) => (
-                <div
-                  key={idx}
-                  className="border rounded-xl p-6 w-full h-64 flex items-center justify-between bg-white shadow-md hover:shadow-lg transition-all cursor-pointer"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-lg mb-3">{cat.title}</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      {cat.items.map((item, i) => (
-                        <li
-                          key={i}
-                          className="hover:text-gray-800 transition-colors"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="ml-6 flex-shrink-0">
-                    <img
-                      src={cat.image}
-                      alt={cat.title}
-                      className="w-24 h-24 object-cover rounded-lg"
-                    />
-                  </div>
-                </div>
-              ))}
+              {categories?.map((cat) => (
+          <div
+            key={cat._id}
+            className="border rounded-xl p-6 w-full h-64 flex items-center justify-between bg-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+          >
+            <div className="flex-1">
+              <h4 className="font-semibold text-lg mb-3">
+                {cat.name}
+              </h4>
+              <p className="text-sm text-gray-600">
+                {cat.description}
+              </p>
+            </div>
+            <div className="ml-6 flex-shrink-0">
+              <img
+                src={`${SERVER_URL}/uploads/${cat.image}`}
+                alt={cat.name}
+                className="w-24 h-24 object-cover rounded-lg"
+                onError={(e) => { e.target.src = "https://via.placeholder.com/100" }}
+              />
+            </div>
+          </div>
+        ))}
             </div>
           </div>
         </div>
