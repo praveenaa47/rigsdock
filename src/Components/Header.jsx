@@ -309,19 +309,19 @@ function Header() {
         {/* Desktop Bottom Navigation */}
         <div className="hidden lg:flex items-center justify-between px-7 py-4 bg-white text-base text-gray-800">
           <div className="flex items-center gap-6">
-            <Link to="/shop">
+            <Link to="/">
               <div 
                 className="relative"
                 onClick={() => setDepartmentOpen(prev => !prev)}
               >
                 <div className="flex items-center gap-2 font-semibold cursor-pointer hover:text-blue-600 transition-colors">
-                  <Menu size={18} />
+                  {/* <Menu size={18} /> */}
                   <span>All Departments</span>
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${departmentOpen ? 'rotate-180' : ''}`} />
+                  {/* <ChevronDown size={14} className={`transition-transform duration-200 ${departmentOpen ? 'rotate-180' : ''}`} /> */}
                 </div>
                 
                 {/* Dropdown Modal */}
-                {departmentOpen && (
+                {/* {departmentOpen && (
                   <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                     <div className="grid grid-cols-1 divide-y divide-gray-100">
                       {departments.map((dept, index) => (
@@ -345,7 +345,7 @@ function Header() {
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </Link> 
             <Link to='/shop' className="hover:text-blue-600 transition-colors">Shop</Link>
@@ -380,10 +380,14 @@ function Header() {
               )}
             </div>
             <div className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
-              Top Rated Items <ChevronDown size={16} />
+           <Link to="/#top-rated-section">
+  Top Rated Items
+</Link>
             </div>
             <div className="flex items-center gap-1 cursor-pointer hover:text-blue-600">
-              New Arrivals <ChevronDown size={16} />
+                        <Link to="/#newarrivals">
+  New Arrivals
+</Link>
             </div>
           </div>
           <div className="flex items-center gap-4 me-4">

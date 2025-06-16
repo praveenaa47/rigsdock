@@ -4,6 +4,12 @@ import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import axios from "axios";
 import { BASE_URL } from "../Services/baseUrl";
+import { dealOfTheDayAPI } from "../Services/allAPIs";
+import { useNavigate } from "react-router-dom";
+import { addToWishlistAPI } from "../Services/wishlistAPI";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 
 const categories = [
@@ -135,6 +141,7 @@ const brands = [
 function Home() {
   const [isDark, setIsDark] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [dealProducts, setDealProducts] = useState([]);
   const [topRatedProducts, setTopRatedProducts] = useState([]);
   const [timeLeft, setTimeLeft] = useState({
     days: 458,
@@ -145,6 +152,9 @@ function Home() {
   const [latestProducts, setLatestProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate()
+    const SERVER_URL = "https://rigsdock.com";
+
 
 useEffect(() => {
   const fetchProducts = async () => {
@@ -163,6 +173,10 @@ useEffect(() => {
         .sort((a, b) => b.averageRating - a.averageRating)
         .slice(0, 10);
       setTopRatedProducts(sortedTopRated);
+
+      // Fetch deal products
+      const dealResponse = await axios.get(`${BASE_URL}/user/dealoftheday/get`);
+      setDealProducts(dealResponse.data);
 
       setLoading(false);
     } catch (err) {
@@ -369,9 +383,29 @@ useEffect(() => {
     ));
   };
 
+ const handleAddToWishlist = async (productId) => {
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    toast.error("Please login first.");
+    return;
+  }
+  
+  try {
+    const res = await addToWishlistAPI(userId, productId);
+    toast.success("Product added to wishlist!");
+    console.log("API response :", res);
+  } catch (err) {
+    console.error("Error adding to wishlist", err);
+    toast.error("Failed to add to wishlist.");
+  }
+};
+
+
+
     const navigateToProduct = (productId) => {
-    // Navigate to product detail page
-    window.location.href = `/product-details/${productId}`;
+  navigate(`/product-details/${productId}`) 
+    
   };
 
   return (
@@ -459,42 +493,74 @@ useEffect(() => {
         <div className="container mx-auto px-2 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Weekly Deal Offer Card */}
-            <div className="lg:w-80 flex-shrink-0">
-              <div
-                className={`rounded-2xl p-6 border-4 border-yellow-400 ${
-                  isDark ? "bg-gray-800" : "bg-white"
-                } relative overflow-hidden`}
-              >
-                <div className="absolute top-4 right-4">
-                  <span className="bg-yellow-400 text-black px-2 py-1 rounded text-sm font-bold">
-                    -4%
-                  </span>
-                </div>
+            {/* Weekly Deal Offer Card - Slider Version */}
+<div className="lg:w-80 flex-shrink-0">
+  <div
+    className={`rounded-2xl p-6 border-4 border-yellow-400 ${
+      isDark ? "bg-gray-800" : "bg-white"
+    } relative overflow-hidden`}
+  >
+    <h2 className="text-xl font-bold mb-4 text-center">
+      Weekly Deal Offer
+    </h2>
 
-                <h2 className="text-xl font-bold mb-4 text-center">
-                  Weekly Deal Offer
-                </h2>
-
+    {loading ? (
+      <div className="flex justify-center items-center h-48">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    ) : error ? (
+      <div className="text-center py-4 text-red-500 text-sm">
+        Failed to load deals
+      </div>
+    ) : dealProducts.length > 0 ? (
+      <div className="relative">
+        {/* Deal Products Slider */}
+        <div className="overflow-hidden">
+          <div
+            className="flex transition-transform duration-300 ease-in-out"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {dealProducts.map((deal, index) => (
+              <div key={deal._id} className="w-full flex-shrink-0 px-2">
                 <div className="text-center mb-6">
+                  <div className="absolute top-4 right-4">
+                    <span className="bg-yellow-400 text-black px-2 py-1 rounded text-sm font-bold">
+                      {Math.round(((deal.product.price - deal.offerPrice) / deal.product.price) * 100)}%
+                    </span>
+                  </div>
+
                   <img
-                    src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop"
-                    alt="Xiaomi Phone"
+                    src={
+                      deal.product.images && deal.product.images.length > 0
+                        ? `${SERVER_URL}/uploads/${deal.product.images[0]}`
+                        : "https://via.placeholder.com/300"
+                    }
+                    alt={deal.product.name}
                     className="w-48 h-48 mx-auto rounded-lg object-cover mb-4"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/300";
+                    }}
                   />
 
-                  <h3 className="font-semibold text-lg mb-2">
-                    Xiaomi Redmi Note 12 Pro 5G 128 GB, 6 GB RAM
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                    {deal.product.name}
                   </h3>
 
                   <div className="flex justify-center mb-2">
                     {renderStars(5)}
                   </div>
 
-                  <div className="text-2xl font-bold text-blue-600 mb-4">
-                    $249 - $265
+                  <div className="flex justify-center items-center gap-2 mb-4">
+                    <span className="text-gray-400 line-through">
+                      ₹{deal.product.price}
+                    </span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      ₹{deal.offerPrice}
+                    </span>
                   </div>
                 </div>
 
+                {/* Countdown Timer */}
                 <div className="text-center mb-6">
                   <p className="text-sm font-medium mb-4">
                     Hurry Up! Limited Time
@@ -528,16 +594,42 @@ useEffect(() => {
                   </div>
                 </div>
 
-                {/* <div className="flex justify-center">
-                <button
-                  onClick={() => setIsDark(!isDark)}
-                  className={`p-3 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} transition-colors`}
+                <button 
+                  onClick={() => navigateToProduct(deal.product._id)}
+                  className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  Shop Now
                 </button>
-              </div> */}
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Arrows */}
+        {dealProducts.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex(prev => prev === 0 ? dealProducts.length - 1 : prev - 1)}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md hover:bg-white transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setCurrentIndex(prev => prev === dealProducts.length - 1 ? 0 : prev + 1)}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full shadow-md hover:bg-white transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+    ) : (
+      <div className="text-center py-10 text-gray-500">
+        No deals available
+      </div>
+    )}
+  </div>
+</div>
 
             {/* Main Products Section */}
            <div className=" px-4 py-4 ">
@@ -599,15 +691,21 @@ useEffect(() => {
                       </span>
                     )}
 
-                    <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-                      <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-                    </button>
+                   <button
+  onClick={(e) => {
+    e.stopPropagation();
+    handleAddToWishlist(product._id);
+  }}
+  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+>
+  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+</button>
 
                     <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                       <img
                         src={
                           product.images && product.images.length > 0
-                            ? `${BASE_URL}/uploads/${product.images[0]}`
+                            ? `${SERVER_URL}/uploads/${product.images[0]}`
                             : "https://via.placeholder.com/300"
                         }
                         alt={product.name}
@@ -638,7 +736,7 @@ useEffect(() => {
                     </div>
 
                     <button 
-                      onClick={() => navigate(`/product/${product._id}`)}
+                      onClick={() => navigate(`/product-details/${product._id}`)}
                       className="w-full bg-blue-800 hover:bg-blue-700 text-white py-2 rounded-md text-xs font-medium transition-colors"
                     >
                       View Product
@@ -657,7 +755,7 @@ useEffect(() => {
       </div>
     <div className="px-4 py-4">
   <div className="flex justify-between items-center mb-6">
-    <h2 className="text-2xl font-bold">Top Rated Item's</h2>
+    <h2 className="text-2xl font-bold" id="top-rated-section">Top Rated Item's</h2>
     <div className="flex gap-2">
       <button
         onClick={prevSlide}
@@ -708,15 +806,22 @@ useEffect(() => {
                       </span>
                     )}
 
-                    <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-                      <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-                    </button>
+                  <button
+  onClick={(e) => {
+    e.stopPropagation();
+    handleAddToWishlist(product._id);
+  }}
+  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+>
+  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+</button>
+
 
                     <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                       <img
                         src={
                           product.images && product.images.length > 0
-                            ? `${BASE_URL}/uploads/${product.images[0]}`
+                            ? `${SERVER_URL}/uploads/${product.images[0]}`
                             : "https://via.placeholder.com/300"
                         }
                         alt={product.name}
@@ -855,7 +960,7 @@ useEffect(() => {
 
      <div className="mt-10 px-4 py-4">
   <div className="flex justify-between items-center mb-6">
-    <h2 className="text-2xl font-bold">New Arrivals</h2>
+    <h2 className="text-2xl font-bold " id="newarrival">New Arrivals</h2>
     <div className="flex gap-2">
       <button
         onClick={prevSlide}
@@ -906,15 +1011,22 @@ useEffect(() => {
                       </span>
                     )}
 
-                    <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-                      <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
-                    </button>
+                    <button
+  onClick={(e) => {
+    e.stopPropagation();
+    handleAddToWishlist(product._id);
+  }}
+  className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+>
+  <Heart className="w-4 h-4 text-gray-700 hover:text-red-500" />
+</button>
+
 
                     <div className="aspect-square mb-3 overflow-hidden rounded-lg">
                       <img
                         src={
                           product.images && product.images.length > 0
-                            ? `${BASE_URL}/uploads/${product.images[0]}`
+                            ? `${SERVER_URL}/uploads/${product.images[0]}`
                             : "https://via.placeholder.com/300"
                         }
                         alt={product.name}
@@ -958,6 +1070,8 @@ useEffect(() => {
       </div>
     </div>
   )}
+          <ToastContainer position="top-right" autoClose={3000} />
+  
 </div>
       <Footer />
     </>

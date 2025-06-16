@@ -52,19 +52,6 @@ export const getSimilarProductsAPI = async (productId) => {
   }
 };
 
-// export const getLatestProducts = async () => {
-//   try {
-//     const response = await axios.get(`${BASE_URL}/user/product/get`);
-//     const sortedProducts = response.data.products
-//       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by newest
-//       .slice(0, 7); // Get latest 6 products
-//     return sortedProducts;
-//   } catch (error) {
-//     console.error("Failed to fetch latest products", error);
-//     throw error;
-//   }
-// };
-
 
 // searchproducts
 export const searchProductAPI = async(query)=>{
@@ -88,6 +75,19 @@ export const getLatestProductsAPI = async () => {
     return sortedProducts;
   } catch (error) {
     console.error("Failed to fetch latest products", error);
+    throw error;
+  }
+};
+
+
+// Dealoftheday
+export const dealOfTheDayAPI = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/user/dealoftheday/get`, {
+    });
+    return response.data;
+    } catch (error) {
+    console.error("Failed to get cart", error);
     throw error;
   }
 };
